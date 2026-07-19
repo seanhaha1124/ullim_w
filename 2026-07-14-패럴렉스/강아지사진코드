@@ -1,0 +1,1187 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Gasoek+One&display=swap');
+html,body{margin:0!important;padding:0!important;background:#111007!important;color:#fff;cursor:none!important;overflow-x:hidden!important;width:100%!important;max-width:100%!important}
+*{box-sizing:border-box}
+.elementor-widget-container,.elementor-widget-shortcode,.elementor-shortcode,.elementor-section,.elementor-container,.elementor-column,.elementor-widget-wrap{padding:0!important;margin:0!important;max-width:100%!important;width:100%!important}
+
+#dp-cursor{position:fixed;pointer-events:none;top:0;left:0;z-index:100000}
+.dp-cur-dot{position:absolute;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:#F4C00C;transition:width .2s,height .2s,opacity .2s}
+.dp-cur-stroke{position:absolute;transform:translate(-50%,-50%);width:0;height:0;border-radius:50%;border:1.5px solid #F4C00C;opacity:0;transition:opacity .2s}
+.dp-cur-arrow{position:absolute;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;background:rgba(10,8,2,.88);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.dp-cur-arrow svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
+
+#dp-reveal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#dp-reveal-c{width:20px;height:20px;border-radius:50%;background:#0a0802;transform:scale(250);transition:transform 1s cubic-bezier(.3,1,.4,1)}
+#dp-pt{position:fixed;inset:0;z-index:99998;pointer-events:none;display:flex;align-items:center;justify-content:center}
+#dp-pt-c{width:20px;height:20px;border-radius:50%;background:#0a0802;transform:scale(0);transition:transform .9s cubic-bezier(.7,0,.2,1)}
+
+#dp-nav{position:fixed;top:0;left:0;right:0;height:92px;padding:0 3.4vw;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;z-index:500;background:linear-gradient(to bottom,rgba(10,8,2,.75),transparent)}
+.dp-nav-side{display:flex;align-items:center;gap:3vw}
+.dp-nav-right{justify-content:flex-end}
+.dp-nav-link{color:#F4C00C;text-decoration:none;font-size:13px;letter-spacing:.28em;text-transform:uppercase;white-space:nowrap;position:relative;padding-bottom:3px;font-family:sans-serif}
+.dp-nav-link::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:#F4C00C;transition:width .35s cubic-bezier(.16,1,.3,1)}
+.dp-nav-link:hover::after,.dp-nav-link.active::after{width:100%}
+.dp-nav-link sup{position:relative;top:-.7em;left:.15em;font-size:9px;color:#fff}
+.dp-logo{cursor:pointer}
+.dp-logo img{width:56px;height:56px;display:block}
+
+/* HERO */
+/* 이미지 로딩 전 엑박 숨기기 */
+.dp-float-photo img,
+.dp-bphoto img,
+.dp-slide-main,
+.dp-thumb img{
+    opacity:0;
+}
+
+/* 이미지가 실제로 로딩된 후 보이기 */
+.dp-float-photo img.is-loaded,
+.dp-bphoto img.is-loaded,
+.dp-slide-main.is-loaded,
+.dp-thumb img.is-loaded{
+    opacity:1;
+}
+
+/* 부드럽게 나타나게 */
+.dp-float-photo img,
+.dp-bphoto img,
+.dp-slide-main,
+.dp-thumb img{
+    transition:opacity .45s ease;
+}
+
+
+
+#dp-hero{position:relative;width:100vw;height:160vh;overflow:hidden;background:#111007;display:flex;align-items:center;justify-content:center;margin-left:calc(50% - 50vw)}
+.dp-hero-bgtxt{position:absolute;left:-2vw;top:50%;transform:translateY(-50%);font-family:Georgia,serif;font-size:18vw;font-weight:900;color:rgba(0,0,0,.55);white-space:nowrap;pointer-events:none;user-select:none;text-transform:uppercase;letter-spacing:-.02em;z-index:1}
+.dp-hero-title{
+    position:relative;
+    z-index:5;
+    text-align:center;
+    color:#F4C00C;
+    font-size:clamp(32px,4.5vw,72px);
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    font-family: "Gasoek One", sans-serif;
+    line-height:1.15;
+    max-width:780px;
+    padding:0 24px
+}
+
+.dp-float-photo{position:absolute;overflow:hidden;pointer-events:none;z-index:3;will-change:transform}
+.dp-float-photo img{width:100%;height:100%;object-fit:cover;display:block}
+/* 사이즈 */
+.dp-fp1{width:clamp(160px,15vw,260px);height:auto;left:2vw;top:55%}
+.dp-fp2{width:clamp(140px,13vw,230px);height:auto;left:17vw;top:12%}
+.dp-fp3{width:clamp(180px,16vw,280px);height:auto;right:3vw;bottom:22%}
+.dp-fp4{width:clamp(140px,13vw,230px);height:auto;right:19vw;top:10%}
+.dp-fp5{width:clamp(160px,14vw,250px);height:auto;left:8vw;bottom:10%}
+.dp-fp6{width:clamp(130px,12vw,210px);height:auto;right:9vw;top:38%}
+.dp-fp7{width:clamp(150px,14vw,240px);height:auto;left:34vw;top:8%}
+.dp-fp8{width:clamp(140px,13vw,220px);height:auto;left:44vw;bottom:12%}
+
+/* AUDIO */
+#dp-audio{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:200;display:flex;align-items:center;gap:10px;cursor:pointer}
+#dp-audio span{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#F4C00C;font-family:sans-serif}
+#dp-wave{display:flex;align-items:center;gap:2px;height:16px}
+#dp-wave .bar{width:2px;height:12px;background:#F4C00C;border-radius:1px;transition:height .1s}
+
+/* 슬라이더 */
+#dp-slider{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    background:#0a0802;
+    margin-left:calc(50% - 50vw);
+}
+
+/* 슬라이드 하나 */
+.dp-slide{
+    position:absolute;
+    inset:0;
+    opacity:0;
+    transition:opacity .7s ease;
+    overflow:hidden;
+}
+
+.dp-slide.active{
+    opacity:1;
+}
+
+/* 흐린 배경 이미지 */
+.dp-slide-bg{
+    position:absolute;
+    inset:-8%;
+    z-index:1;
+    background-size:cover;
+    background-position:center center;
+    filter:blur(26px) brightness(.42) contrast(1.08);
+    transform:scale(1.08);
+    opacity:.9;
+}
+
+/* 실제 이미지가 들어가는 안전 영역 */
+/* 상단 메뉴와 하단 썸네일에 이미지가 가려지지 않도록 따로 영역을 만듦 */
+.dp-slide-inner{
+    position:absolute;
+    left:0;
+    right:0;
+    top:92px;
+    bottom:90px;
+    z-index:2;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    overflow:hidden;
+}
+
+/* 실제 큰 이미지 */
+/* 기본은 세로 높이에 맞추고, 가로는 원본 비율에 따라 자동 */
+.dp-slide-main{
+    display:block;
+    height:100%;
+    width:auto;
+    max-width:none;
+
+    object-fit:contain;
+    object-position:center center;
+
+    box-shadow:0 30px 90px rgba(0,0,0,.38);
+}
+
+/* 가로가 너무 긴 이미지는 화면 밖으로 나가지 않게 자동 보정 */
+.dp-slide-main.is-wide{
+    width:100vw;
+    height:auto;
+    max-height:100%;
+}
+
+/* 세로가 긴 이미지는 세로 기준으로 맞춤 */
+.dp-slide-main.is-tall{
+    height:100%;
+    width:auto;
+    max-width:none;
+}
+
+/* 정사각형에 가까운 이미지는 너무 작아 보이지 않게 */
+.dp-slide-main.is-square{
+    height:100%;
+    width:auto;
+    max-width:100vw;
+}
+
+/* 좌우 클릭 영역 */
+.dp-slider-zone{
+    position:absolute;
+    top:92px;
+    bottom:90px;
+    width:50%;
+    z-index:10;
+    cursor:none;
+}
+
+#dp-zone-left{
+    left:0;
+}
+
+#dp-zone-right{
+    right:0;
+}
+
+/* 썸네일 */
+#dp-thumbs{
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+    z-index:20;
+    height:90px;
+    background:rgba(0,0,0,.5);
+    overflow:hidden;
+}
+
+#dp-thumbs-track{
+    display:flex;
+    gap:3px;
+    height:90px;
+    transition:transform .4s cubic-bezier(.16,1,.3,1);
+    will-change:transform;
+}
+
+.dp-thumb{
+    flex:0 0 80px;
+    height:90px;
+    overflow:hidden;
+    cursor:pointer;
+    border:2px solid transparent;
+    transition:border-color .2s;
+}
+
+.dp-thumb.active{
+    border-color:#F4C00C;
+}
+
+.dp-thumb img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center 30%;
+    display:block;
+    opacity:.7;
+    transition:opacity .2s;
+}
+
+.dp-thumb.active img,
+.dp-thumb:hover img{
+    opacity:1;
+}
+
+/* 텍스트 */
+#dp-text{padding:120px 8vw;background:#111007;width:100%}
+.dp-text-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px}
+.dp-text-col h2{font-family:Georgia,serif;color:#F4C00C;font-size:clamp(24px,2.2vw,38px);font-weight:400;margin:0 0 28px;line-height:1.2}
+.dp-text-col h3{font-family:Georgia,serif;color:#F4C00C;font-size:clamp(18px,1.6vw,28px);font-weight:400;margin:32px 0 14px;line-height:1.2}
+.dp-text-col p{color:rgba(255,255,255,.82);font-size:15px;line-height:1.8;margin:0 0 16px;font-family:sans-serif}
+.dp-text-col ul{margin:0 0 16px;padding-left:20px}
+.dp-text-col ul li{color:rgba(255,255,255,.82);font-size:15px;line-height:1.8;font-family:sans-serif;margin-bottom:6px}
+.dp-price-item{margin-bottom:16px}
+.dp-price-item strong{color:#fff;font-size:17px}
+.dp-price-item span{color:rgba(255,255,255,.7);font-size:15px}
+
+/* 예약 */
+#dp-booking{width:100vw;background:#111007;overflow:hidden;margin-left:calc(50% - 50vw)}
+.dp-booking-inner{display:grid;grid-template-columns:1fr 1fr;min-height:700px;width:100%}
+.dp-booking-photos{position:relative;overflow:visible;min-height:700px}
+.dp-bphoto{position:absolute;overflow:hidden;will-change:transform}
+.dp-bphoto img{width:100%;height:100%;object-fit:cover;display:block}
+.dp-bp1{width:46%;height:auto;left:0;top:0}
+.dp-bp2{width:40%;height:auto;left:22%;top:18%}
+.dp-bp3{width:43%;height:auto;left:5%;top:46%}
+.dp-bp4{width:38%;height:auto;left:28%;top:62%}
+.dp-bphoto img{width:100%;height:auto;display:block}
+
+.dp-booking-form{padding:60px 6vw 60px 40px;display:flex;flex-direction:column;justify-content:center}
+.dp-booking-form h2{font-family:Georgia,serif;color:#F4C00C;font-size:clamp(36px,4vw,64px);font-weight:400;margin:0 0 48px;line-height:1.1;text-transform:uppercase}
+.dp-form-row{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+.dp-form-field{display:flex;flex-direction:column;gap:8px}
+.dp-form-field label{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.5);font-family:sans-serif}
+.dp-form-field input,.dp-form-field select,.dp-form-field textarea{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.25);color:#fff;font-size:14px;font-family:sans-serif;padding:8px 0;outline:none;transition:border-color .3s;-webkit-appearance:none}
+.dp-form-field input:focus,.dp-form-field select:focus,.dp-form-field textarea:focus{border-bottom-color:#F4C00C}
+.dp-form-field select option{background:#1a1608;color:#fff}
+.dp-form-field textarea{resize:none;height:80px}
+.dp-form-field.full{grid-column:1/-1}
+.dp-form-submit{margin-top:32px}
+.dp-form-submit button{background:transparent;border:1px solid #F4C00C;color:#F4C00C;font-size:11px;letter-spacing:.3em;text-transform:uppercase;padding:14px 36px;font-family:sans-serif;cursor:pointer;transition:background .3s,color .3s}
+.dp-form-submit button:hover{background:#F4C00C;color:#0a0802}
+
+/* 폼 입력 글씨 색상 */
+.dp-form-field input,
+.dp-form-field select,
+.dp-form-field textarea{
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+    caret-color:#F4C00C;
+}
+
+/* placeholder 글씨 색상 */
+.dp-form-field input::placeholder,
+.dp-form-field textarea::placeholder{
+    color:rgba(255,255,255,.45) !important;
+    -webkit-text-fill-color:rgba(255,255,255,.45) !important;
+}
+
+/* 자동완성 시 검은 글씨/흰 배경 방지 */
+.dp-form-field input:-webkit-autofill,
+.dp-form-field input:-webkit-autofill:hover,
+.dp-form-field input:-webkit-autofill:focus{
+    -webkit-text-fill-color:#fff !important;
+    box-shadow:0 0 0 1000px #111007 inset !important;
+    transition:background-color 9999s ease-in-out 0s;
+}
+
+
+.dp-privacy-box{
+    margin-top:8px;
+    margin-bottom:24px;
+    font-family:'Noto Sans KR', sans-serif;
+}
+
+.dp-privacy-label{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    color:rgba(255,255,255,.86);
+    font-size:13px;
+    line-height:1.5;
+    cursor:pointer;
+}
+
+.dp-privacy-label input{
+    width:16px;
+    height:16px;
+    margin-top:3px;
+    accent-color:#F4C00C;
+}
+
+.dp-privacy-label strong{
+    color:#F4C00C;
+    font-weight:500;
+}
+
+.dp-privacy-text{
+    margin-top:12px;
+    padding:16px;
+    max-height:130px;
+    overflow-y:auto;
+    border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.035);
+    color:rgba(255,255,255,.65);
+    font-size:12px;
+    line-height:1.65;
+}
+
+.dp-privacy-text p{
+    margin:0 0 6px;
+}
+
+
+/* 문의 완료 모달 */
+.dp-modal{
+    position:fixed;
+    inset:0;
+    z-index:1000000;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.72);
+    backdrop-filter:blur(8px);
+}
+
+.dp-modal.is-show{
+    display:flex;
+}
+
+.dp-modal-box{
+    position:relative;
+    width:min(420px, calc(100% - 40px));
+    padding:44px 34px 36px;
+    background:#111007;
+    border:1px solid rgba(244,192,12,.45);
+    box-shadow:0 30px 80px rgba(0,0,0,.45);
+    text-align:center;
+    font-family:'Noto Sans KR', sans-serif;
+    transform:translateY(20px) scale(.96);
+    opacity:0;
+    animation:dpModalIn .45s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+@keyframes dpModalIn{
+    to{
+        transform:translateY(0) scale(1);
+        opacity:1;
+    }
+}
+
+.dp-modal-small{
+    margin:0 0 12px;
+    color:#F4C00C;
+    font-size:11px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+}
+
+.dp-modal-box h3{
+    margin:0 0 16px;
+    color:#F4C00C;
+    font-size:28px;
+    font-weight:400;
+    line-height:1.25;
+    font-family:'Noto Sans KR', sans-serif;
+}
+
+.dp-modal-box p{
+    margin:0 0 24px;
+    color:rgba(255,255,255,.78);
+    font-size:14px;
+    line-height:1.7;
+}
+
+.dp-modal-ok{
+    border:1px solid #F4C00C;
+    background:transparent;
+    color:#F4C00C;
+    padding:12px 28px;
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .25s ease, color .25s ease;
+}
+
+.dp-modal-ok:hover{
+    background:#F4C00C;
+    color:#111007;
+}
+
+.dp-modal-close{
+    position:absolute;
+    right:16px;
+    top:12px;
+    width:32px;
+    height:32px;
+    border:0;
+    background:transparent;
+    color:#F4C00C;
+    font-size:28px;
+    line-height:1;
+    cursor:pointer;
+}
+
+
+
+/* 모달이 열렸을 때는 기본 마우스 커서 보이게 */
+body.dp-modal-open,
+body.dp-modal-open *{
+    cursor:auto !important;
+}
+
+/* 모달이 열렸을 때 커스텀 커서는 숨김 */
+body.dp-modal-open #dp-cursor{
+    display:none !important;
+}
+
+body.dp-modal-open .dp-modal-close,
+body.dp-modal-open .dp-modal-ok{
+    cursor:pointer !important;
+}
+
+
+
+/* 푸터 */
+#dp-footer{padding:80px 0 40px;background:#0a0802;text-align:center;width:100%}
+#dp-footer-logo{width:52px;height:52px;display:block;margin:0 auto 32px}
+.dp-footer-nav{display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:28px;flex-wrap:wrap}
+.dp-footer-nav a{color:#F4C00C;text-decoration:none;font-size:12px;letter-spacing:.25em;text-transform:uppercase;font-family:sans-serif;padding:8px 20px}
+.dp-footer-nav .dot{color:rgba(255,255,255,.3);font-size:8px}
+.dp-footer-copy{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.3);font-family:sans-serif}
+
+
+
+
+@media(max-width:1024px){
+    body{cursor:auto!important}
+    #dp-cursor,#dp-reveal,#dp-pt{display:none!important}
+    #dp-nav{height:72px;padding:0 20px}
+    .dp-nav-link{font-size:10px;letter-spacing:.15em}
+    .dp-logo img{width:44px;height:44px}
+    #dp-hero{height:100vh}
+    .dp-hero-title{font-size:clamp(24px,5vw,44px)}
+    .dp-fp1,.dp-fp2,.dp-fp3,.dp-fp4,.dp-fp5,.dp-fp6,.dp-fp7,.dp-fp8{display:none}
+    #dp-thumbs{height:70px}
+    .dp-thumb{flex:0 0 60px;height:70px}
+    .dp-text-grid{grid-template-columns:1fr;gap:40px}
+    #dp-text{padding:80px 24px}
+    .dp-booking-inner{grid-template-columns:1fr}
+    .dp-booking-photos{min-height:420px}
+    .dp-booking-form{padding:40px 24px}
+    .dp-form-row{grid-template-columns:1fr}
+    #dp-audio{cursor:pointer}
+
+    .dp-slide-inner{
+        top:72px;
+        bottom:70px;
+    }
+
+    .dp-slider-zone{
+        top:72px;
+        bottom:70px;
+    }
+
+    .dp-slide-main{
+        height:100%;
+        width:auto;
+        max-width:none;
+    }
+
+    .dp-slide-main.is-wide{
+        width:100vw;
+        height:auto;
+        max-height:100%;
+    }
+
+    .dp-slide-main.is-tall{
+        height:100%;
+        width:auto;
+        max-width:none;
+    }
+
+    .dp-slide-main.is-square{
+        height:100%;
+        width:auto;
+        max-width:100vw;
+    }
+}
+</style>
+
+<div id="dp-reveal"><div id="dp-reveal-c"></div></div>
+<div id="dp-pt"><div id="dp-pt-c"></div></div>
+<div id="dp-cursor">
+    <div class="dp-cur-dot" id="dp-dot"></div>
+    <div class="dp-cur-stroke" id="dp-stroke"></div>
+    <div class="dp-cur-arrow" id="dp-arrow">
+        <svg viewBox="0 0 24 24"><polyline id="dp-arrow-poly" points="9,18 15,12 9,6"/></svg>
+    </div>
+</div>
+
+<nav id="dp-nav">
+    <div class="dp-nav-side">
+        <a href="/gallery02_new/" class="dp-nav-link dp-nav-go">GALLERIES<sup>6</sup></a>
+        <a href="#" class="dp-nav-link dp-nav-go">EXPERIENCES<sup>2</sup></a>
+    </div>
+    <div class="dp-logo dp-nav-go" data-href="/">
+        <img src="http://seanhaha.com/wp-content/uploads/2026/05/제목-없는-디자인-8.png" alt="logo">
+    </div>
+    <div class="dp-nav-side dp-nav-right">
+        <a href="#" class="dp-nav-link dp-nav-go active">DOG PHOTOSHOOTS</a>
+        <a href="#" class="dp-nav-link dp-nav-go">SHOP</a>
+        <a href="#" class="dp-nav-link dp-nav-go">CONTACT</a>
+    </div>
+</nav>
+
+<section id="dp-hero">
+    <div class="dp-hero-bgtxt">DOG PHOTOSHOOTS</div>
+    <h1 class="dp-hero-title">한국어입니다.</h1>
+    <div class="dp-float-photo dp-fp1" id="dp-fp1"><img alt=""></div>
+    <div class="dp-float-photo dp-fp2" id="dp-fp2"><img alt=""></div>
+    <div class="dp-float-photo dp-fp3" id="dp-fp3"><img alt=""></div>
+    <div class="dp-float-photo dp-fp4" id="dp-fp4"><img alt=""></div>
+    <div class="dp-float-photo dp-fp5" id="dp-fp5"><img alt=""></div>
+    <div class="dp-float-photo dp-fp6" id="dp-fp6"><img alt=""></div>
+    <div class="dp-float-photo dp-fp7" id="dp-fp7"><img alt=""></div>
+    <div class="dp-float-photo dp-fp8" id="dp-fp8"><img alt=""></div>
+</section>
+
+<section id="dp-slider">
+    <div id="dp-slides"></div>
+    <div class="dp-slider-zone" id="dp-zone-left"></div>
+    <div class="dp-slider-zone" id="dp-zone-right"></div>
+    <div id="dp-thumbs"><div id="dp-thumbs-track"></div></div>
+</section>
+
+<section id="dp-text">
+    <div class="dp-text-grid">
+        <div class="dp-text-col">
+            <h2>Overview:</h2>
+            <p><strong>LOCATION – 피크 디스트릭트 랭셋 도그 포토슈트</strong></p>
+            <p>이곳에서 여러분의 소중한 강아지의 놀라운 포트레이트와 액션 사진을 담아드립니다. 물을 좋아하는 강아지라면 얕은 강에서 뛰어노는 모습도 멋지게 촬영할 수 있어요.</p>
+            <p>삼림과 황야지대는 아름다운 포트레이트 사진을 위한 최적의 배경이 됩니다. 8월에는 히더 꽃이 만발하고, 가을에는 단풍이 물들어 계절 내내 멋진 사진을 찍을 수 있습니다.</p>
+            <p>랭셋 반 카파크, S36 4GY (A616 바로 옆)에서 만납니다. 미팅 시간은 오후 2시이며 일몰 시간에 따라 조정 가능합니다.</p>
+            <p>예약에 관심이 있으시면 편하게 문의해 주세요!</p>
+            <h3>How much does it cost?</h3>
+            <div class="dp-price-item"><strong>60만원</strong> <span>– 촬영 + 디지털 이미지 15장 포함</span></div>
+            <div class="dp-price-item"><strong>80만원</strong> <span>– 촬영 + 디지털 이미지 20장 포함</span></div>
+            <p style="color:rgba(255,255,255,.6);font-size:13px;margin-top:16px">예약 확정을 위해 50% 선입금이 필요하며, 나머지 잔금은 촬영 24시간 전까지 납부해 주세요.</p>
+        </div>
+        <div class="dp-text-col">
+            <h2>What is included?</h2>
+            <ul>
+                <li>강아지와 함께하는 특별한 1:1 포토슈트</li>
+                <li>촬영 시간은 약 2~3시간입니다</li>
+            </ul>
+            <h3>What is not included?</h3>
+            <ul>
+                <li>집에서 촬영 장소까지의 교통비</li>
+                <li>촬영 중 본인과 강아지의 음료 및 간식</li>
+                <li>본인과 강아지의 보험</li>
+            </ul>
+            <h3>What shall I bring?</h3>
+            <ul>
+                <li>방수 기능이 있는 편안한 의류와 신발</li>
+                <li>강아지 훈련용 간식/장난감</li>
+                <li>본인과 강아지를 위한 음료</li>
+                <li>계절에 따라 본인과 강아지를 위한 방충제</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="dp-booking">
+    <div class="dp-booking-inner">
+        <div class="dp-booking-photos" id="dp-bphotos">
+            <div class="dp-bphoto dp-bp1" id="dp-bp1"><img src="" alt=""></div>
+            <div class="dp-bphoto dp-bp2" id="dp-bp2"><img src="" alt=""></div>
+            <div class="dp-bphoto dp-bp3" id="dp-bp3"><img src="" alt=""></div>
+            <div class="dp-bphoto dp-bp4" id="dp-bp4"><img src="" alt=""></div>
+        </div>
+        <div class="dp-booking-form">
+            <h2>MAKE A<br>BOOKING</h2>
+            <form id="dp-form" method="post" action="/wp-admin/admin-post.php">
+                <input type="hidden" name="action" value="dp_send_enquiry">
+            
+                <div class="dp-form-row">
+                    <div class="dp-form-field">
+                        <label>이름*</label>
+                        <input 
+                            type="text" 
+                            name="name" 
+                            placeholder="이름을 입력해 주세요" 
+                            minlength="2"
+                            maxlength="30"
+                            required
+                        >
+                    </div>
+            
+                    <div class="dp-form-field">
+                        <label>연락처*</label>
+                        <input 
+                            type="tel" 
+                            name="phone" 
+                            placeholder="01012345678" 
+                            inputmode="numeric"
+                            pattern="[0-9]{9,11}"
+                            maxlength="11"
+                            required
+                        >
+                    </div>
+                </div>
+            
+                <div class="dp-form-row">
+                    <div class="dp-form-field full">
+                        <label>문의사항*</label>
+                        <textarea 
+                            name="message" 
+                            placeholder="문의 내용을 입력해 주세요 (최대 1000자)" 
+                            maxlength="1000"
+                            required
+                        ></textarea>
+                    </div>
+                </div>
+            
+                <div class="dp-privacy-box">
+                    <label class="dp-privacy-label">
+                        <input type="checkbox" name="privacy_agree" value="yes" required>
+                        <span>개인정보 수집 및 이용에 동의합니다. <strong>(필수)</strong></span>
+                    </label>
+            
+                    <div class="dp-privacy-text">
+                        <p><strong>개인정보 수집 및 이용 안내</strong></p>
+                        <p>수집 항목: 이름, 연락처, 문의사항</p>
+                        <p>수집 목적: 온라인 문의 확인 및 답변</p>
+                        <p>보유 기간: 문의 처리 완료 후 1년 또는 관련 법령에 따른 보관 기간</p>
+                        <p>동의를 거부할 권리가 있으나, 동의하지 않을 경우 문의 접수가 제한될 수 있습니다.</p>
+                    </div>
+                </div>
+            
+                <div class="dp-form-submit">
+                    <button type="submit">SEND ENQUIRY</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="dp-modal" class="dp-modal">
+        <div class="dp-modal-box">
+            <button type="button" class="dp-modal-close" aria-label="닫기">×</button>
+            <p class="dp-modal-small">ENQUIRY SENT</p>
+            <h3>문의가 전송되었습니다.</h3>
+            <p>확인 후 연락드리겠습니다.</p>
+            <button type="button" class="dp-modal-ok">확인</button>
+        </div>
+    </div>
+</section>
+
+<footer id="dp-footer">
+    <img id="dp-footer-logo" src="http://seanhaha.com/wp-content/uploads/2026/05/제목-없는-디자인-8.png" alt="logo">
+    <nav class="dp-footer-nav">
+        <a href="/galleries02/" class="dp-nav-go">GALLERIES</a>
+        <span class="dot">•</span>
+        <a href="#" class="dp-nav-go">EXPERIENCES</a>
+        <span class="dot">•</span>
+        <a href="#" class="dp-nav-go">DOG PHOTOSHOOTS</a>
+        <span class="dot">•</span>
+        <a href="#" class="dp-nav-go">CONTACT</a>
+    </nav>
+    <p class="dp-footer-copy">COPYRIGHT © 2026 • ALL RIGHTS RESERVED</p>
+</footer>
+
+<div id="dp-audio">
+    <span>AUDIO</span>
+    <div id="dp-wave"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+</div>
+<script src="https://w.soundcloud.com/player/api.js"></script>
+<iframe id="dp-snd" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/sean-haha-401132925/chribonn-nature-216798&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&visual=false" style="display:none" allow="autoplay"></iframe>
+
+<script>
+(function(){
+const SITE_URL='https://seanhaha.com';
+const POST_TYPE='dog_photo';
+
+// 진입 전환
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const c=document.getElementById('dp-reveal-c');
+    if(c){c.style.transform='scale(0)';setTimeout(()=>{const o=document.getElementById('dp-reveal');if(o)o.remove();},1100);}
+}));
+
+// 페이지 전환
+function goPage(url){
+    if(!url||url==='#')return;
+    const c=document.getElementById('dp-pt-c');
+    if(c)c.style.transform='scale(250)';
+    setTimeout(()=>{window.location.href=url;},750);
+}
+document.querySelectorAll('.dp-nav-go').forEach(el=>{
+    el.addEventListener('click',function(e){
+        const href=this.getAttribute('href')||this.dataset.href;
+        if(href&&href!=='#'){e.preventDefault();goPage(href);}
+    });
+});
+
+// 커서
+const cursor=document.getElementById('dp-cursor');
+const dot=document.getElementById('dp-dot');
+const stroke=document.getElementById('dp-stroke');
+const arrow=document.getElementById('dp-arrow');
+const arrowPoly=document.getElementById('dp-arrow-poly');
+document.addEventListener('mousemove',e=>{
+    cursor.style.transform=`translate(${e.clientX}px,${e.clientY}px)`;
+});
+function setCursor(mode){
+    dot.style.opacity=mode==='dot'?'1':'0';
+    stroke.style.opacity=mode==='link'?'1':'0';
+    arrow.style.opacity=mode==='arrow'?'1':'0';
+    if(mode==='link'){
+        stroke.style.width='0';stroke.style.height='0';
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+            stroke.style.transition='width .25s cubic-bezier(.16,1,.3,1),height .25s cubic-bezier(.16,1,.3,1),opacity .2s';
+            stroke.style.width='40px';stroke.style.height='40px';
+        }));
+    }
+}
+setCursor('dot');
+document.querySelectorAll('.dp-nav-link,.dp-logo,#dp-audio').forEach(el=>{
+    el.addEventListener('mouseenter',()=>setCursor('link'));
+    el.addEventListener('mouseleave',()=>setCursor('dot'));
+});
+
+
+
+function setImageLoaded(img, url, alt){
+    if(!img || !url)return;
+
+    img.classList.remove('is-loaded');
+
+    img.onload=function(){
+        img.classList.add('is-loaded');
+    };
+
+    img.onerror=function(){
+        img.classList.remove('is-loaded');
+        img.removeAttribute('src');
+    };
+
+    img.alt = alt || '';
+    img.src = url;
+
+    if(img.complete && img.naturalWidth > 0){
+        img.classList.add('is-loaded');
+    }
+}
+
+// REST API
+let allPhotos=[];
+fetch(`${SITE_URL}/wp-json/wp/v2/${POST_TYPE}?per_page=30&_embed=1`)
+    .then(r=>r.ok?r.json():[])
+    .then(posts=>{
+        allPhotos=posts.map(p=>{
+            try{
+                const m=p._embedded['wp:featuredmedia'];
+                if(m&&m[0])return{url:m[0].source_url,alt:p.title.rendered};
+            }catch(e){}
+            return null;
+        }).filter(Boolean);
+        buildHero();
+        buildSlider();
+        buildBookingPhotos();
+    })
+    .catch(()=>{});
+
+// ★ HERO 8장
+// 상단 이미지 움직임을 더 크게 만든 버전입니다.
+// 원본 비율은 CSS에서 유지하고, JS는 이동/회전/속도만 제어합니다.
+const fpConfig=[
+    {id:'dp-fp1', type:'fly',      ox:-620, oy:220,  rot0:-22, rot1:10,  y:-760, x:180,  start:0.00, end:0.78},
+    {id:'dp-fp3', type:'fly',      ox:620,  oy:180,  rot0:24,  rot1:-12, y:-820, x:-180, start:0.02, end:0.82},
+    {id:'dp-fp5', type:'fly',      ox:-560, oy:260,  rot0:18,  rot1:-14, y:-700, x:220,  start:0.06, end:0.86},
+
+    {id:'dp-fp2', type:'parallax', ox:0,    oy:0,    rot0:-10, rot1:16,  y:-820, x:-120, start:0.00, end:1.00},
+    {id:'dp-fp4', type:'parallax', ox:0,    oy:0,    rot0:13,  rot1:-14, y:680,  x:140,  start:0.00, end:1.00},
+    {id:'dp-fp6', type:'parallax', ox:0,    oy:0,    rot0:-14, rot1:12,  y:-720, x:-150, start:0.00, end:1.00},
+    {id:'dp-fp7', type:'parallax', ox:0,    oy:0,    rot0:16,  rot1:-10, y:620,  x:160,  start:0.00, end:1.00},
+    {id:'dp-fp8', type:'parallax', ox:0,    oy:0,    rot0:-8,  rot1:18,  y:-760, x:100,  start:0.00, end:1.00},
+];
+
+function clamp(n,min,max){
+    return Math.max(min, Math.min(max, n));
+}
+
+function lerp(a,b,t){
+    return a + (b - a) * t;
+}
+
+function buildHero(){
+    fpConfig.forEach((cfg,i)=>{
+        const el=document.getElementById(cfg.id);
+        if(!el)return;
+
+       if(allPhotos[i]){
+            const img = el.querySelector('img');
+            setImageLoaded(img, allPhotos[i].url, allPhotos[i].alt);
+        }
+
+        if(cfg.type === 'fly'){
+            el.style.opacity='0';
+            el.style.transform=`translate3d(${cfg.ox}px,${cfg.oy}px,0) rotate(${cfg.rot0}deg)`;
+        }else{
+            el.style.opacity='1';
+            el.style.transform=`translate3d(0,0,0) rotate(${cfg.rot0}deg)`;
+        }
+    });
+
+    requestAnimationFrame(updateHeroParallax);
+}
+
+function updateHeroParallax(){
+    const hero=document.getElementById('dp-hero');
+    if(!hero)return;
+
+    const rect = hero.getBoundingClientRect();
+    const total = window.innerHeight + rect.height;
+
+    /*
+     * 화면 기준 진행률.
+     * scrollY / heroH 방식보다 움직임이 더 오래 이어집니다.
+     */
+    const progress = clamp((window.innerHeight - rect.top) / total, 0, 1);
+
+    fpConfig.forEach((cfg)=>{
+        const el=document.getElementById(cfg.id);
+        if(!el)return;
+
+        const local = clamp((progress - cfg.start) / (cfg.end - cfg.start), 0, 1);
+        const eased = 1 - Math.pow(1 - local, 3);
+
+        let tx;
+        let ty;
+        let rot = lerp(cfg.rot0, cfg.rot1, eased);
+        let opacity = 1;
+
+        if(cfg.type === 'fly'){
+            tx = lerp(cfg.ox, cfg.x, eased);
+            ty = lerp(cfg.oy, cfg.y * (progress - .22), eased);
+            opacity = eased;
+        }else{
+            tx = cfg.x * (progress - .5);
+            ty = cfg.y * (progress - .5);
+        }
+
+        el.style.opacity = String(opacity);
+        el.style.transform = `translate3d(${tx}px,${ty}px,0) rotate(${rot}deg)`;
+
+        const img = el.querySelector('img');
+        if(img){
+            img.style.transform = `scale(${1 + progress * 0.055})`;
+        }
+    });
+}
+
+let heroTicking=false;
+window.addEventListener('scroll',function(){
+    if(heroTicking)return;
+
+    heroTicking=true;
+
+    requestAnimationFrame(()=>{
+        updateHeroParallax();
+        heroTicking=false;
+    });
+},{passive:true});
+
+window.addEventListener('resize',updateHeroParallax);
+
+// ★ 슬라이더
+function buildSlider(){
+    if(!allPhotos.length)return;
+
+    const slidesEl=document.getElementById('dp-slides');
+    const thumbsEl=document.getElementById('dp-thumbs-track');
+
+    let cur=0;
+
+    allPhotos.forEach((p,i)=>{
+        const s=document.createElement('div');
+        s.className='dp-slide'+(i===0?' active':'');
+
+        const bg=document.createElement('div');
+        bg.className='dp-slide-bg';
+        bg.style.backgroundImage=`url("${p.url}")`;
+
+        const inner=document.createElement('div');
+        inner.className='dp-slide-inner';
+
+        const mainImg=document.createElement('img');
+        mainImg.className='dp-slide-main';
+        mainImg.loading=i===0 ? 'eager' : 'lazy';
+
+        /*
+         * 이미지 원본 비율을 읽어서
+         * 가로형 / 세로형 / 정사각형에 가까운 이미지로 나눔
+         */
+        mainImg.onload=function(){
+            mainImg.classList.add('is-loaded');
+
+            const ratio = mainImg.naturalWidth / mainImg.naturalHeight;
+
+            mainImg.classList.remove('is-wide','is-tall','is-square');
+
+            if(ratio > 1.55){
+                /*
+                 * 가로가 긴 이미지
+                 * 화면 가로에 맞추되 세로가 넘치지 않게
+                 */
+                mainImg.classList.add('is-wide');
+            }else if(ratio < 0.85){
+                /*
+                 * 세로가 긴 이미지
+                 * 세로 높이에 맞추고 가로는 자동으로 줄어듦
+                 */
+                mainImg.classList.add('is-tall');
+            }else{
+                /*
+                 * 정사각형에 가까운 이미지
+                 */
+                mainImg.classList.add('is-square');
+            }
+        };
+
+        mainImg.onerror=function(){
+            mainImg.classList.remove('is-loaded');
+            mainImg.removeAttribute('src');
+        };
+
+        mainImg.alt=p.alt || '';
+        mainImg.src=p.url;
+
+        inner.appendChild(mainImg);
+
+        s.appendChild(bg);
+        s.appendChild(inner);
+        slidesEl.appendChild(s);
+
+        const t=document.createElement('div');
+        t.className='dp-thumb'+(i===0?' active':'');
+
+        const thumbImg=document.createElement('img');
+        thumbImg.loading='lazy';
+        setImageLoaded(thumbImg, p.url, p.alt);
+
+        t.appendChild(thumbImg);
+        t.addEventListener('click',()=>goSlide(i));
+        thumbsEl.appendChild(t);
+    });
+
+    function goSlide(n){
+        document.querySelectorAll('.dp-slide').forEach((s,i)=>{
+            s.classList.toggle('active',i===n);
+        });
+
+        document.querySelectorAll('.dp-thumb').forEach((t,i)=>{
+            t.classList.toggle('active',i===n);
+        });
+
+        cur=n;
+
+        // 선택된 썸네일이 중앙에 오도록 자동 슬라이드
+        const track=document.getElementById('dp-thumbs-track');
+        const container=document.getElementById('dp-thumbs');
+
+        const thumbW=83; // 80px + 3px gap
+        const containerW=container.offsetWidth;
+
+        const offset=Math.max(0, n*thumbW - containerW/2 + thumbW/2);
+        const maxOffset=Math.max(0, allPhotos.length*thumbW - containerW);
+
+        track.style.transform=`translateX(-${Math.min(offset,maxOffset)}px)`;
+    }
+
+    document.getElementById('dp-zone-left').addEventListener('click',()=>{
+        goSlide((cur-1+allPhotos.length)%allPhotos.length);
+    });
+
+    document.getElementById('dp-zone-right').addEventListener('click',()=>{
+        goSlide((cur+1)%allPhotos.length);
+    });
+
+    const slider=document.getElementById('dp-slider');
+
+    slider.addEventListener('mousemove',e=>{
+        const isRight=e.clientX>slider.offsetWidth/2;
+        arrowPoly.setAttribute(
+            'points',
+            isRight ? '9,18 15,12 9,6' : '15,18 9,12 15,6'
+        );
+        setCursor('arrow');
+    });
+
+    slider.addEventListener('mouseleave',()=>{
+        setCursor('dot');
+    });
+}
+
+
+// ★ 예약 사진 4장
+// 온라인문의 폼 왼쪽 이미지: 위아래 이동 없이, 왼쪽 → 오른쪽 + 각도 변화
+const bpConfig=[
+    {id:'dp-bp1', startX:-360, endX:20,  rot0:-14, rot1:4,  start:0.00, end:0.80},
+    {id:'dp-bp2', startX:-300, endX:55,  rot0:10,  rot1:-6, start:0.08, end:0.88},
+    {id:'dp-bp3', startX:-420, endX:10,  rot0:-9,  rot1:7,  start:0.16, end:0.96},
+    {id:'dp-bp4', startX:-260, endX:70,  rot0:12,  rot1:-8, start:0.24, end:1.00},
+];
+
+function buildBookingPhotos(){
+    bpConfig.forEach((cfg,i)=>{
+        const el=document.getElementById(cfg.id);
+        if(!el)return;
+
+        const idx=allPhotos.length>8+i ? 8+i : i % Math.max(allPhotos.length,1);
+
+        if(allPhotos[idx]){
+            const img = el.querySelector('img');
+            setImageLoaded(img, allPhotos[idx].url, allPhotos[idx].alt);
+        }
+
+        el.style.opacity='0';
+        el.style.transition='none';
+        el.style.transform=`translate3d(${cfg.startX}px,0,0) rotate(${cfg.rot0}deg)`;
+    });
+
+    updateBookingParallax();
+}
+
+function updateBookingParallax(){
+    const section=document.getElementById('dp-booking');
+    if(!section)return;
+
+    const rect = section.getBoundingClientRect();
+    const total = window.innerHeight + rect.height;
+    const progress = clamp((window.innerHeight - rect.top) / total, 0, 1);
+
+    bpConfig.forEach((cfg)=>{
+        const el=document.getElementById(cfg.id);
+        if(!el)return;
+
+        const local = clamp((progress - cfg.start) / (cfg.end - cfg.start), 0, 1);
+
+        /*
+         * 부드럽게 들어오고, 끝에서 자연스럽게 멈추는 움직임
+         */
+        const eased = 1 - Math.pow(1 - local, 3);
+
+        const x = lerp(cfg.startX, cfg.endX, eased);
+        const rot = lerp(cfg.rot0, cfg.rot1, eased);
+
+        el.style.opacity = String(Math.min(1, eased + 0.1));
+        el.style.transition='none';
+        el.style.transform=`translate3d(${x}px,0,0) rotate(${rot}deg)`;
+
+        const img = el.querySelector('img');
+        if(img){
+            img.style.transform = `scale(${1 + eased * 0.035})`;
+        }
+    });
+}
+
+let bookingTicking=false;
+
+window.addEventListener('scroll',function(){
+    if(bookingTicking)return;
+
+    bookingTicking=true;
+
+    requestAnimationFrame(()=>{
+        updateBookingParallax();
+        bookingTicking=false;
+    });
+},{passive:true});
+
+window.addEventListener('resize',updateBookingParallax);
+
+// SoundCloud
+const snd=document.getElementById('dp-snd');
+const bars=document.querySelectorAll('#dp-wave .bar');
+let playing=false,wRAF;
+function animW(){bars.forEach(b=>{b.style.height=(4+Math.random()*12)+'px';});wRAF=requestAnimationFrame(animW);}
+function stopW(){cancelAnimationFrame(wRAF);bars.forEach(b=>b.style.height='12px');}
+function initSC(){
+    if(typeof SC==='undefined'){setTimeout(initSC,300);return;}
+    const widget=SC.Widget(snd);
+    document.getElementById('dp-audio').addEventListener('click',()=>{
+        if(!playing){widget.play();animW();playing=true;}
+        else{widget.pause();stopW();playing=false;}
+    });
+}
+initSC();
+
+// 전송 완료 후 모달팝업 표시
+const params = new URLSearchParams(window.location.search);
+
+if(params.get('booking') === 'success'){
+    const modal = document.getElementById('dp-modal');
+
+    if(modal){
+        modal.classList.add('is-show');
+        document.body.classList.add('dp-modal-open');
+
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+}
+
+// 모달 닫기
+document.querySelectorAll('.dp-modal-close, .dp-modal-ok').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+        const modal = document.getElementById('dp-modal');
+        if(modal){
+            modal.classList.remove('is-show');
+            document.body.classList.remove('dp-modal-open');
+        }
+    });
+});
+
+// 배경 클릭 시 닫기
+const dpModal = document.getElementById('dp-modal');
+
+if(dpModal){
+    dpModal.addEventListener('click', function(e){
+        if(e.target === dpModal){
+            dpModal.classList.remove('is-show');
+            document.body.classList.remove('dp-modal-open');
+        }
+    });
+}
+
+
+// 연락처 숫자만 입력 + 11자리 제한
+const phoneInput = document.querySelector('input[name="phone"]');
+
+if(phoneInput){
+    phoneInput.addEventListener('input', function(){
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11);
+    });
+}
+
+
+})();
+</script>
