@@ -1,0 +1,1073 @@
+/**
+ * Elementor 자동 카드 쌓기
+ *
+ * 방식:
+ * - ScrollTrigger pin을 사용하지 않음
+ * - CSS sticky + 직접 스크롤 계산
+ * - 카드 개수 자동 인식
+ * - 마지막 카드까지 동일한 간격
+ * - 마지막에는 쌓인 카드 전체가 함께 위로 이동
+ */
+
+add_action('wp_head', function () {
+?>
+<style id="auto-stack-stable-style">
+
+/* ==================================================
+   기본 설정
+
+   --stack-start:
+   첫 번째 카드가 화면 위에서 떨어지는 거리
+
+   --stack-gap:
+   쌓인 카드 사이에 보이는 간격
+
+   --card-height:
+   모든 카드의 동일한 높이
+================================================== */
+
+body .auto-stack-section {
+    --stack-start: 150px;
+    --stack-gap: 20px;
+    --card-height: min(78vh, 920px);
+    --stack-scroll-height: 400vh;
+
+    position: relative !important;
+    display: block !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: var(--stack-scroll-height) !important;
+    min-height: var(--stack-scroll-height) !important;
+
+    margin: 0 !important;
+    padding: 0 3vw !important;
+
+    overflow: visible !important;
+
+    background: #ffffff;
+
+    box-sizing: border-box !important;
+    isolation: isolate;
+}
+
+
+/* Elementor 내부 래퍼 */
+body .auto-stack-section > .e-con-inner {
+    position: relative !important;
+    display: block !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: 100% !important;
+    min-height: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: visible !important;
+}
+
+
+/*
+ * sticky를 방해하는 상위 컨테이너에
+ * JavaScript가 자동으로 추가합니다.
+ */
+body .auto-stack-sticky-parent {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}
+
+
+/* ==================================================
+   고정되는 카드 무대
+
+   카드가 모두 쌓인 후 부모 섹션이 끝나면
+   이 무대 전체가 자연스럽게 위로 이동합니다.
+================================================== */
+
+body .auto-stack-list {
+    position: sticky !important;
+    top: 0 !important;
+
+    display: block !important;
+
+    width: min(1436px, 100%) !important;
+    max-width: 1436px !important;
+
+    height: 100vh !important;
+    min-height: 100vh !important;
+
+    margin: 0 auto !important;
+    padding: 0 !important;
+
+    overflow: visible !important;
+
+    box-sizing: border-box !important;
+    isolation: isolate;
+}
+
+
+/* Elementor 내부 래퍼 */
+body .auto-stack-list > .e-con-inner {
+    position: static !important;
+    display: block !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: 100% !important;
+    min-height: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: visible !important;
+}
+
+
+/* ==================================================
+   개별 카드
+================================================== */
+
+body .auto-stack-card {
+    --card-z: 10;
+
+    position: absolute !important;
+
+    top: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: var(--card-height) !important;
+    min-height: var(--card-height) !important;
+    max-height: var(--card-height) !important;
+
+    margin: 0 !important;
+    padding: 50px 30px !important;
+
+    overflow: hidden !important;
+
+    border-radius: clamp(35px, 5vw, 90px) !important;
+
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+
+    box-sizing: border-box !important;
+
+    z-index: var(--card-z) !important;
+
+    transform-origin: center top;
+
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+
+/* Elementor 카드 내부 래퍼 */
+body .auto-stack-card > .e-con-inner {
+    position: relative !important;
+    z-index: 3 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: 100% !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: visible !important;
+
+    box-sizing: border-box !important;
+}
+
+
+/* 카드 내부 위젯 */
+body .auto-stack-card .elementor-widget {
+    position: relative;
+    z-index: 3;
+}
+
+
+/* 카드 글자 */
+body .auto-stack-card .elementor-heading-title,
+body .auto-stack-card .elementor-widget-text-editor,
+body .auto-stack-card .elementor-widget-text-editor p {
+    color: #ffffff;
+}
+
+
+/* ==================================================
+   이미지 위 음영
+================================================== */
+
+body .auto-stack-card::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    z-index: 1;
+
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.02) 0%,
+        rgba(0, 0, 0, 0.04) 50%,
+        rgba(0, 0, 0, 0.18) 100%
+    );
+
+    pointer-events: none;
+}
+
+
+body .auto-stack-card >
+.elementor-background-overlay {
+    z-index: 2 !important;
+}
+
+
+/* ==================================================
+   태블릿
+================================================== */
+
+@media screen and (max-width: 1024px) {
+
+    body .auto-stack-section {
+        --stack-start: 100px;
+        --stack-gap: 16px;
+        --card-height: 74vh;
+
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+    }
+
+    body .auto-stack-card {
+        min-height: 560px !important;
+        max-height: none !important;
+
+        padding: 45px 26px !important;
+        border-radius: 52px !important;
+    }
+
+}
+
+
+/* ==================================================
+   모바일
+================================================== */
+
+@media screen and (max-width: 767px) {
+
+    body .auto-stack-section {
+        --stack-start: 70px;
+        --stack-gap: 10px;
+        --card-height: 68vh;
+
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    body .auto-stack-card {
+        min-height: 480px !important;
+        max-height: none !important;
+
+        padding: 35px 20px !important;
+        border-radius: 30px !important;
+    }
+
+    body .auto-stack-card br {
+        display: none;
+    }
+
+}
+
+</style>
+<?php
+});
+
+
+add_action('wp_footer', function () {
+?>
+<script id="auto-stack-stable-script">
+(function () {
+
+    'use strict';
+
+    /*
+     * 중복 이벤트 등록 방지
+     */
+    if (window.seanhahaAutoStackStarted) {
+        return;
+    }
+
+    window.seanhahaAutoStackStarted = true;
+
+
+    /* ==================================================
+       계산 함수
+    ================================================== */
+
+    function clamp(value, min, max) {
+
+        return Math.min(
+            Math.max(value, min),
+            max
+        );
+
+    }
+
+
+    function range(value, start, end) {
+
+        if (start === end) {
+            return 0;
+        }
+
+        return clamp(
+            (value - start) /
+            (end - start),
+            0,
+            1
+        );
+
+    }
+
+
+    function smootherStep(value) {
+
+        value = clamp(
+            value,
+            0,
+            1
+        );
+
+        return value *
+            value *
+            value *
+            (
+                value *
+                (
+                    value * 6 -
+                    15
+                ) +
+                10
+            );
+
+    }
+
+
+    function lerp(start, end, progress) {
+
+        return start +
+            (
+                end -
+                start
+            ) *
+            progress;
+
+    }
+
+
+    function getCssNumber(
+        element,
+        propertyName,
+        fallback
+    ) {
+
+        const style =
+            window.getComputedStyle(
+                element
+            );
+
+        const value =
+            parseFloat(
+                style.getPropertyValue(
+                    propertyName
+                )
+            );
+
+        return Number.isFinite(value)
+            ? value
+            : fallback;
+
+    }
+
+
+    /*
+     * 현재 카드 목록에 속한 카드만 가져옵니다.
+     */
+    function getCards(list) {
+
+        return Array.from(
+            list.querySelectorAll(
+                '.auto-stack-card'
+            )
+        ).filter(function (card) {
+
+            return (
+                card.closest(
+                    '.auto-stack-list'
+                ) === list
+            );
+
+        });
+
+    }
+
+
+    /* ==================================================
+       초기화
+    ================================================== */
+
+    function initAutoStackCards() {
+
+        if (
+            typeof window.gsap ===
+            'undefined'
+        ) {
+
+            console.warn(
+                '자동 카드 효과: GSAP를 찾지 못했습니다.'
+            );
+
+            return false;
+
+        }
+
+
+        const sections =
+            Array.from(
+                document.querySelectorAll(
+                    '.auto-stack-section'
+                )
+            );
+
+
+        if (!sections.length) {
+
+            console.warn(
+                '자동 카드 효과: auto-stack-section을 찾지 못했습니다.'
+            );
+
+            return true;
+
+        }
+
+
+        const states = [];
+
+
+        sections.forEach(
+            function (section) {
+
+                const lists =
+                    Array.from(
+                        section.querySelectorAll(
+                            '.auto-stack-list'
+                        )
+                    ).filter(
+                        function (list) {
+
+                            return (
+                                list.closest(
+                                    '.auto-stack-section'
+                                ) === section
+                            );
+
+                        }
+                    );
+
+
+                lists.forEach(
+                    function (list) {
+
+                        const cards =
+                            getCards(list);
+
+
+                        if (!cards.length) {
+                            return;
+                        }
+
+
+                        /*
+                         * sticky를 방해하는
+                         * 상위 overflow를 보이기로 변경
+                         */
+                        let parent =
+                            section.parentElement;
+
+
+                        while (
+                            parent &&
+                            parent !==
+                            document.body
+                        ) {
+
+                            const style =
+                                window.getComputedStyle(
+                                    parent
+                                );
+
+
+                            if (
+                                style.overflow ===
+                                    'hidden' ||
+                                style.overflow ===
+                                    'clip' ||
+                                style.overflowY ===
+                                    'hidden' ||
+                                style.overflowY ===
+                                    'clip' ||
+                                style.overflowY ===
+                                    'auto' ||
+                                style.overflowY ===
+                                    'scroll'
+                            ) {
+
+                                parent.classList.add(
+                                    'auto-stack-sticky-parent'
+                                );
+
+                            }
+
+
+                            parent =
+                                parent.parentElement;
+
+                        }
+
+
+                        /*
+                         * 카드 개수에 따라
+                         * 전체 스크롤 높이를 자동 계산
+                         *
+                         * 숫자가 클수록 카드 이동이 느려집니다.
+                         */
+                        const desktopPerCard = 92;
+                        const tabletPerCard = 84;
+                        const mobilePerCard = 76;
+
+                        const desktopBase = 155;
+                        const tabletBase = 145;
+                        const mobileBase = 135;
+
+
+                        function applySectionHeight() {
+
+                            let perCard =
+                                desktopPerCard;
+
+                            let baseHeight =
+                                desktopBase;
+
+
+                            if (
+                                window.innerWidth <=
+                                767
+                            ) {
+
+                                perCard =
+                                    mobilePerCard;
+
+                                baseHeight =
+                                    mobileBase;
+
+                            } else if (
+                                window.innerWidth <=
+                                1024
+                            ) {
+
+                                perCard =
+                                    tabletPerCard;
+
+                                baseHeight =
+                                    tabletBase;
+
+                            }
+
+
+                            const scrollHeight =
+                                Math.max(
+                                    260,
+                                    baseHeight +
+                                    (
+                                        cards.length -
+                                        1
+                                    ) *
+                                    perCard
+                                );
+
+
+                            section.style.setProperty(
+                                '--stack-scroll-height',
+                                scrollHeight + 'vh'
+                            );
+
+                        }
+
+
+                        applySectionHeight();
+
+
+                        /*
+                         * 카드 z-index와 초기 표시 설정
+                         */
+                        cards.forEach(
+                            function (
+                                card,
+                                index
+                            ) {
+
+                                card.style.setProperty(
+                                    '--card-z',
+                                    String(
+                                        10 + index
+                                    )
+                                );
+
+                                card.style.visibility =
+                                    'visible';
+
+                                card.style.opacity =
+                                    '1';
+
+                            }
+                        );
+
+
+                        /*
+                         * GSAP transform setter
+                         */
+                        const setCardY =
+                            cards.map(
+                                function (card) {
+
+                                    return window.gsap
+                                        .quickSetter(
+                                            card,
+                                            'y',
+                                            'px'
+                                        );
+
+                                }
+                            );
+
+
+                        states.push({
+
+                            section:
+                                section,
+
+                            list:
+                                list,
+
+                            cards:
+                                cards,
+
+                            setCardY:
+                                setCardY,
+
+                            applySectionHeight:
+                                applySectionHeight
+
+                        });
+
+                    }
+                );
+
+            }
+        );
+
+
+        if (!states.length) {
+
+            console.warn(
+                '자동 카드 효과: auto-stack-list 또는 auto-stack-card를 찾지 못했습니다.'
+            );
+
+            return true;
+
+        }
+
+
+        /* ==================================================
+           화면 상태 계산
+        ================================================== */
+
+        function updateState(state) {
+
+            const section =
+                state.section;
+
+            const cards =
+                state.cards;
+
+            const rect =
+                section.getBoundingClientRect();
+
+
+            const viewportHeight =
+                window.innerHeight;
+
+
+            const scrollDistance =
+                Math.max(
+                    section.offsetHeight -
+                    viewportHeight,
+                    1
+                );
+
+
+            const progress =
+                clamp(
+                    -rect.top /
+                    scrollDistance,
+                    0,
+                    1
+                );
+
+
+            const stackStart =
+                getCssNumber(
+                    section,
+                    '--stack-start',
+                    150
+                );
+
+
+            const stackGap =
+                getCssNumber(
+                    section,
+                    '--stack-gap',
+                    20
+                );
+
+
+            const cardHeight =
+                cards[0]
+                    .getBoundingClientRect()
+                    .height;
+
+
+            /*
+             * 각 카드가 움직이는 전체 구간
+             *
+             * 마지막 16%는 모든 카드가
+             * 완전히 쌓인 상태로 유지됩니다.
+             */
+            const movementEnd = 0.84;
+
+
+            const movingCardCount =
+                Math.max(
+                    cards.length - 1,
+                    1
+                );
+
+
+            const cardSegment =
+                movementEnd /
+                movingCardCount;
+
+
+            cards.forEach(
+                function (
+                    card,
+                    index
+                ) {
+
+                    const targetY =
+                        stackStart +
+                        (
+                            index *
+                            stackGap
+                        );
+
+
+                    /*
+                     * 첫 번째 카드는 처음부터
+                     * 지정 위치에 놓입니다.
+                     */
+                    if (index === 0) {
+
+                        state.setCardY[
+                            index
+                        ](
+                            targetY
+                        );
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * 각 카드가 순서대로 이동합니다.
+                     */
+                    const segmentStart =
+                        (
+                            index -
+                            1
+                        ) *
+                        cardSegment;
+
+
+                    const segmentEnd =
+                        segmentStart +
+                        cardSegment;
+
+
+                    const rawCardProgress =
+                        range(
+                            progress,
+                            segmentStart,
+                            segmentEnd
+                        );
+
+
+                    const cardProgress =
+                        smootherStep(
+                            rawCardProgress
+                        );
+
+
+                    /*
+                     * 화면 아래에서 시작
+                     */
+                    const startY =
+                        viewportHeight +
+                        cardHeight +
+                        80;
+
+
+                    /*
+                     * 마지막 카드를 포함한 모든 카드가
+                     * 동일한 공식으로 정확한 위치에 도착
+                     */
+                    const currentY =
+                        lerp(
+                            startY,
+                            targetY,
+                            cardProgress
+                        );
+
+
+                    state.setCardY[
+                        index
+                    ](
+                        currentY
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* ==================================================
+           스크롤 업데이트
+        ================================================== */
+
+        let ticking = false;
+
+
+        function update() {
+
+            states.forEach(
+                function (state) {
+
+                    updateState(
+                        state
+                    );
+
+                }
+            );
+
+
+            ticking = false;
+
+        }
+
+
+        function requestUpdate() {
+
+            if (ticking) {
+                return;
+            }
+
+
+            ticking = true;
+
+
+            window.requestAnimationFrame(
+                update
+            );
+
+        }
+
+
+        window.addEventListener(
+            'scroll',
+            requestUpdate,
+            {
+                passive: true
+            }
+        );
+
+
+        window.addEventListener(
+            'resize',
+            function () {
+
+                states.forEach(
+                    function (state) {
+
+                        state
+                            .applySectionHeight();
+
+                    }
+                );
+
+
+                requestUpdate();
+
+            }
+        );
+
+
+        window.addEventListener(
+            'orientationchange',
+            function () {
+
+                window.setTimeout(
+                    function () {
+
+                        states.forEach(
+                            function (state) {
+
+                                state
+                                    .applySectionHeight();
+
+                            }
+                        );
+
+
+                        requestUpdate();
+
+                    },
+                    250
+                );
+
+            }
+        );
+
+
+        window.addEventListener(
+            'load',
+            requestUpdate
+        );
+
+
+        /*
+         * 이미지와 Elementor 로딩 지연 대응
+         */
+        window.setTimeout(
+            requestUpdate,
+            100
+        );
+
+        window.setTimeout(
+            requestUpdate,
+            500
+        );
+
+        window.setTimeout(
+            requestUpdate,
+            1200
+        );
+
+
+        /*
+         * 최초 화면 표시
+         */
+        requestUpdate();
+
+
+        return true;
+
+    }
+
+
+    /* ==================================================
+       GSAP 로딩 대기
+
+       기존 스니펫에서 GSAP를 불러오기 때문에
+       준비될 때까지 잠시 기다립니다.
+    ================================================== */
+
+    let attempts = 0;
+
+    const waitForGsap =
+        window.setInterval(
+            function () {
+
+                attempts += 1;
+
+
+                if (
+                    typeof window.gsap !==
+                    'undefined'
+                ) {
+
+                    window.clearInterval(
+                        waitForGsap
+                    );
+
+                    initAutoStackCards();
+
+                    return;
+
+                }
+
+
+                if (attempts >= 100) {
+
+                    window.clearInterval(
+                        waitForGsap
+                    );
+
+                    console.error(
+                        '자동 카드 효과: GSAP가 10초 안에 로드되지 않았습니다.'
+                    );
+
+                }
+
+            },
+            100
+        );
+
+})();
+</script>
+<?php
+}, 100);
