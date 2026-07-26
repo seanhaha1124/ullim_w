@@ -1,0 +1,1295 @@
+/**
+ * SANC 오른쪽 패널 공개 스크롤 효과
+ *
+ * 진행 순서
+ * 1. 기본 이미지 100% + 영문 제목
+ * 2. 영문 제목 사라짐
+ * 3. 오른쪽 패널이 오른쪽부터 50%까지 공개
+ * 4. 가운데 흰색 간격 생성
+ * 5. 오른쪽 설명 등장
+ * 6. 왼쪽 핵심 단어 등장
+ * 7. 장면 전체가 위로 이동하고 다음 장면 시작
+ */
+
+add_action('wp_head', function () {
+?>
+<style id="sanc-split-story-style">
+
+/* ==================================================
+   전체 장면 묶음
+================================================== */
+
+body .sanc-split-story {
+    --split-gap: 24px;
+    --split-radius: 70px;
+
+    position: relative !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    width: 100vw !important;
+    max-width: none !important;
+
+    margin: 0 0 0 calc(50% - 50vw) !important;
+    padding: 0 !important;
+
+    gap: 0 !important;
+
+    overflow: visible !important;
+
+    background: #ffffff;
+
+    box-sizing: border-box !important;
+}
+
+
+body .sanc-split-story > .e-con-inner {
+    display: flex !important;
+    flex-direction: column !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    gap: 0 !important;
+
+    overflow: visible !important;
+}
+
+
+/* sticky 방해 요소 보정 */
+body .sanc-split-sticky-parent {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}
+
+
+/* ==================================================
+   장면 하나의 스크롤 길이
+================================================== */
+
+body .sanc-split-scene {
+    height: 240vh !important;
+    min-height: 240vh !important;
+
+    position: relative !important;
+    display: block !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: visible !important;
+
+    background: #ffffff;
+
+    box-sizing: border-box !important;
+}
+
+
+body .sanc-split-scene > .e-con-inner {
+    position: relative !important;
+    display: block !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: 100% !important;
+    min-height: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: visible !important;
+}
+
+
+/* ==================================================
+   화면에 고정되는 장면
+================================================== */
+
+body .sanc-split-stage {
+    position: sticky !important;
+    top: 0 !important;
+
+    display: block !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: 100vh !important;
+    min-height: 100vh !important;
+
+    margin: 0 !important;
+    padding: 40px 3vw !important;
+
+    overflow: hidden !important;
+
+    background: #ffffff;
+
+    box-sizing: border-box !important;
+    isolation: isolate;
+}
+
+
+body .sanc-split-stage > .e-con-inner {
+    position: relative !important;
+    display: block !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: 100% !important;
+    min-height: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: hidden !important;
+}
+
+
+/*
+ * 가운데 흰색 구분선
+ *
+ * 처음에는 숨겨져 있고
+ * 오른쪽 패널이 열릴 때 나타납니다.
+ */
+body .sanc-split-stage::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    top: 40px;
+    bottom: 40px;
+
+    width: var(--split-gap);
+
+    z-index: 15;
+
+    background: #ffffff;
+
+    opacity: 0;
+
+    transform:
+        translateX(-50%)
+        scaleY(0.92);
+
+    transform-origin: center center;
+
+    pointer-events: none;
+
+    will-change: opacity, transform;
+}
+
+
+/* ==================================================
+   기본 이미지
+================================================== */
+
+body .sanc-split-base {
+    position: absolute !important;
+    inset: 0 !important;
+
+    display: block !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: 100% !important;
+    min-height: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: hidden !important;
+
+    border-radius: var(--split-radius) !important;
+
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+
+    z-index: 1 !important;
+
+    box-sizing: border-box !important;
+}
+
+
+body .sanc-split-base > .e-con-inner {
+    width: 100% !important;
+    max-width: none !important;
+
+    height: 100% !important;
+    min-height: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* ==================================================
+   오른쪽에서 공개되는 패널
+================================================== */
+
+body .sanc-split-cover {
+    position: absolute !important;
+
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    /*
+     * 최종 크기는 처음부터 고정합니다.
+     * 처음에는 clip-path로 완전히 가립니다.
+     */
+    width: calc(
+        50% -
+        (var(--split-gap) / 2)
+    ) !important;
+
+    max-width: none !important;
+
+    height: 100% !important;
+    min-height: 100% !important;
+
+    margin: 0 !important;
+    padding: 60px !important;
+
+    overflow: hidden !important;
+
+    border-radius: var(--split-radius) !important;
+
+    background-color: #e9e1d6 !important;
+
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+
+    /*
+     * 왼쪽 100%를 가려서 처음에는 완전히 숨김
+     * JS가 100% → 0%로 변경합니다.
+     */
+    clip-path: inset(
+        0 0 0 100%
+        round var(--split-radius)
+    );
+
+    -webkit-clip-path: inset(
+        0 0 0 100%
+        round var(--split-radius)
+    );
+
+    z-index: 10 !important;
+
+    box-sizing: border-box !important;
+
+    will-change: clip-path;
+}
+
+
+body .sanc-split-cover > .e-con-inner {
+    position: relative !important;
+    z-index: 3 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    height: 100% !important;
+    min-height: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: hidden !important;
+}
+
+
+/* ==================================================
+   첫 화면 영문 제목
+================================================== */
+
+body .sanc-split-slogan {
+    position: absolute !important;
+
+    left: 50% !important;
+    top: 50% !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+    padding: 0 30px !important;
+
+    z-index: 20 !important;
+
+    text-align: center !important;
+
+    opacity: 1;
+    visibility: visible;
+
+    pointer-events: none !important;
+
+    will-change: opacity, transform;
+}
+
+
+body .sanc-split-slogan .elementor-widget-container {
+    width: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    text-align: center !important;
+}
+
+
+body .sanc-split-slogan .elementor-heading-title,
+body .sanc-split-slogan p {
+    margin: 0 !important;
+
+    color: #ffffff !important;
+
+    font-size: clamp(
+        48px,
+        6vw,
+        112px
+    ) !important;
+
+    line-height: 1 !important;
+
+    font-weight: 400 !important;
+
+    letter-spacing: -0.045em !important;
+
+    text-align: center !important;
+}
+
+
+/* ==================================================
+   오른쪽 설명
+================================================== */
+
+body .sanc-split-description {
+    width: min(100%, 580px) !important;
+    max-width: 580px !important;
+
+    margin: 0 auto !important;
+    padding: 0 !important;
+
+    z-index: 10 !important;
+
+    opacity: 0;
+    visibility: hidden;
+
+    text-align: center !important;
+
+    will-change: opacity, transform;
+}
+
+
+body .sanc-split-description .elementor-widget-container {
+    width: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    text-align: center !important;
+}
+
+
+body .sanc-split-description,
+body .sanc-split-description p {
+    color: #222222 !important;
+
+    font-size: clamp(
+        18px,
+        1.55vw,
+        28px
+    ) !important;
+
+    line-height: 1.55 !important;
+
+    font-weight: 600 !important;
+
+    letter-spacing: -0.035em !important;
+
+    text-align: center !important;
+}
+
+
+/* ==================================================
+   왼쪽 핵심 단어
+================================================== */
+
+body .sanc-split-keyword {
+    position: absolute !important;
+
+    left: 25% !important;
+    top: 50% !important;
+
+    width: 34% !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+    padding: 0 72px !important;
+
+    z-index: 20 !important;
+
+    opacity: 0;
+    visibility: hidden;
+
+    text-align: center !important;
+
+    pointer-events: none !important;
+
+    will-change: opacity, transform;
+}
+
+
+body .sanc-split-keyword::before {
+    content: "(";
+
+    position: absolute;
+
+    left: 0;
+    top: 50%;
+
+    color: #ffffff;
+
+    font-family: Georgia, serif;
+    font-size: clamp(70px, 8vw, 150px);
+    font-weight: 300;
+    line-height: 1;
+
+    transform: translateY(-52%);
+}
+
+
+body .sanc-split-keyword::after {
+    content: ")";
+
+    position: absolute;
+
+    right: 0;
+    top: 50%;
+
+    color: #ffffff;
+
+    font-family: Georgia, serif;
+    font-size: clamp(70px, 8vw, 150px);
+    font-weight: 300;
+    line-height: 1;
+
+    transform: translateY(-52%);
+}
+
+
+body .sanc-split-keyword .elementor-widget-container {
+    width: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    text-align: center !important;
+}
+
+
+body .sanc-split-keyword .elementor-heading-title,
+body .sanc-split-keyword p {
+    margin: 0 !important;
+
+    color: #ffffff !important;
+
+    font-size: clamp(
+        28px,
+        2.3vw,
+        46px
+    ) !important;
+
+    line-height: 1.35 !important;
+
+    font-weight: 700 !important;
+
+    letter-spacing: -0.04em !important;
+
+    text-align: center !important;
+}
+
+
+/* Elementor 등장 효과 제거 */
+body .sanc-split-slogan.elementor-invisible,
+body .sanc-split-keyword.elementor-invisible,
+body .sanc-split-description.elementor-invisible {
+    visibility: visible !important;
+}
+
+body .sanc-split-slogan.animated,
+body .sanc-split-keyword.animated,
+body .sanc-split-description.animated {
+    animation: none !important;
+}
+
+
+/* ==================================================
+   태블릿
+================================================== */
+
+@media screen and (max-width: 1024px) {
+
+    body .sanc-split-story {
+        --split-gap: 18px;
+        --split-radius: 50px;
+    }
+
+    body .sanc-split-stage {
+        padding: 28px 22px !important;
+    }
+
+    body .sanc-split-stage::after {
+        top: 28px;
+        bottom: 28px;
+    }
+
+    body .sanc-split-cover {
+        padding: 40px !important;
+    }
+
+    body .sanc-split-keyword {
+        padding-left: 45px !important;
+        padding-right: 45px !important;
+    }
+
+}
+
+
+/* ==================================================
+   모바일
+================================================== */
+
+@media screen and (max-width: 767px) {
+
+    body .sanc-split-story {
+        --split-gap: 12px;
+        --split-radius: 28px;
+    }
+
+    body .sanc-split-scene {
+        height: 220vh !important;
+        min-height: 220vh !important;
+    }
+
+    body .sanc-split-stage {
+        padding: 16px !important;
+    }
+
+    body .sanc-split-stage::after {
+        left: 16px;
+        right: 16px;
+        top: 50%;
+        bottom: auto;
+
+        width: auto;
+        height: var(--split-gap);
+
+        transform:
+            translateY(-50%)
+            scaleX(0.92);
+    }
+
+    /*
+     * 모바일에서는 아래쪽 절반이 공개됩니다.
+     */
+    body .sanc-split-cover {
+        left: 0 !important;
+        right: 0 !important;
+
+        top: auto !important;
+        bottom: 0 !important;
+
+        width: 100% !important;
+
+        height: calc(
+            50% -
+            (var(--split-gap) / 2)
+        ) !important;
+
+        min-height: 0 !important;
+
+        padding: 25px !important;
+
+        clip-path: inset(
+            100% 0 0 0
+            round var(--split-radius)
+        );
+
+        -webkit-clip-path: inset(
+            100% 0 0 0
+            round var(--split-radius)
+        );
+    }
+
+    body .sanc-split-keyword {
+        left: 50% !important;
+        top: 25% !important;
+
+        width: 80% !important;
+
+        padding: 0 52px !important;
+    }
+
+    body .sanc-split-keyword::before,
+    body .sanc-split-keyword::after {
+        font-size: 68px;
+    }
+
+}
+
+</style>
+<?php
+});
+
+
+add_action('wp_footer', function () {
+?>
+<script id="sanc-split-story-script">
+(function () {
+
+    'use strict';
+
+
+    if (window.seanhahaSancSplitRevealStarted) {
+        return;
+    }
+
+    window.seanhahaSancSplitRevealStarted = true;
+
+
+    function clamp(value, min, max) {
+
+        return Math.min(
+            Math.max(value, min),
+            max
+        );
+
+    }
+
+
+    function range(value, start, end) {
+
+        if (start === end) {
+            return 0;
+        }
+
+        return clamp(
+            (value - start) /
+            (end - start),
+            0,
+            1
+        );
+
+    }
+
+
+    function smootherStep(value) {
+
+        value = clamp(
+            value,
+            0,
+            1
+        );
+
+        return value *
+            value *
+            value *
+            (
+                value *
+                (
+                    value * 6 -
+                    15
+                ) +
+                10
+            );
+
+    }
+
+
+    function lerp(start, end, progress) {
+
+        return start +
+            (
+                end -
+                start
+            ) *
+            progress;
+
+    }
+
+
+    function removeElementorMotion(element) {
+
+        if (!element) {
+            return;
+        }
+
+        element.classList.remove(
+            'elementor-invisible',
+            'animated',
+            'fadeIn',
+            'fadeInUp',
+            'fadeInDown',
+            'fadeInLeft',
+            'fadeInRight',
+            'zoomIn'
+        );
+
+    }
+
+
+    function initSancSplitReveal() {
+
+        const stories =
+            Array.from(
+                document.querySelectorAll(
+                    '.sanc-split-story'
+                )
+            );
+
+
+        if (!stories.length) {
+            return;
+        }
+
+
+        const states =
+            [];
+
+
+        stories.forEach(function (story) {
+
+            const scenes =
+                Array.from(
+                    story.querySelectorAll(
+                        '.sanc-split-scene'
+                    )
+                ).filter(function (scene) {
+
+                    return (
+                        scene.closest(
+                            '.sanc-split-story'
+                        ) === story
+                    );
+
+                });
+
+
+            scenes.forEach(function (scene) {
+
+                const stage =
+                    scene.querySelector(
+                        '.sanc-split-stage'
+                    );
+
+                const cover =
+                    scene.querySelector(
+                        '.sanc-split-cover'
+                    );
+
+                const slogan =
+                    scene.querySelector(
+                        '.sanc-split-slogan'
+                    );
+
+                const description =
+                    scene.querySelector(
+                        '.sanc-split-description'
+                    );
+
+                const keyword =
+                    scene.querySelector(
+                        '.sanc-split-keyword'
+                    );
+
+
+                if (
+                    !stage ||
+                    !cover ||
+                    !slogan ||
+                    !description ||
+                    !keyword
+                ) {
+
+                    console.warn(
+                        'SANC 분할 효과: 필요한 클래스가 빠졌습니다.',
+                        scene
+                    );
+
+                    return;
+
+                }
+
+
+                [
+                    slogan,
+                    description,
+                    keyword
+                ].forEach(
+                    removeElementorMotion
+                );
+
+
+                /*
+                 * sticky 방해 상위 요소 보정
+                 */
+                let parent =
+                    scene.parentElement;
+
+
+                while (
+                    parent &&
+                    parent !== document.body
+                ) {
+
+                    const style =
+                        window.getComputedStyle(
+                            parent
+                        );
+
+
+                    if (
+                        style.overflow === 'hidden' ||
+                        style.overflow === 'clip' ||
+                        style.overflowY === 'hidden' ||
+                        style.overflowY === 'clip' ||
+                        style.overflowY === 'auto' ||
+                        style.overflowY === 'scroll'
+                    ) {
+
+                        parent.classList.add(
+                            'sanc-split-sticky-parent'
+                        );
+
+                    }
+
+
+                    parent =
+                        parent.parentElement;
+
+                }
+
+
+                /*
+                 * 요소 중앙 정렬
+                 */
+                slogan.style.transform =
+                    'translate3d(-50%, -50%, 0)';
+
+
+                keyword.style.transform =
+                    'translate3d(-50%, -50%, 0)';
+
+
+                states.push({
+                    scene: scene,
+                    stage: stage,
+                    cover: cover,
+                    slogan: slogan,
+                    description: description,
+                    keyword: keyword
+                });
+
+            });
+
+        });
+
+
+        function updateState(state) {
+
+            const rect =
+                state.scene
+                    .getBoundingClientRect();
+
+
+            const viewportHeight =
+                window.innerHeight;
+
+
+            const scrollDistance =
+                Math.max(
+                    state.scene.offsetHeight -
+                    viewportHeight,
+                    1
+                );
+
+
+            const progress =
+                clamp(
+                    -rect.top /
+                    scrollDistance,
+                    0,
+                    1
+                );
+
+
+            /*
+             * ==================================================
+             * 1. 첫 영문 글씨 사라짐
+             *
+             * 0%~22%는 그대로 표시
+             * 22%~34% 사이에서 사라짐
+             * ==================================================
+             */
+
+            const sloganOut =
+                smootherStep(
+                    range(
+                        progress,
+                        0.22,
+                        0.34
+                    )
+                );
+
+
+            const sloganOpacity =
+                1 -
+                sloganOut;
+
+
+            state.slogan.style.opacity =
+                String(
+                    sloganOpacity
+                );
+
+
+            state.slogan.style.visibility =
+                sloganOpacity > 0.002
+                    ? 'visible'
+                    : 'hidden';
+
+
+            state.slogan.style.transform =
+                'translate3d(-50%, -50%, 0) ' +
+                'translateY(' +
+                lerp(
+                    0,
+                    -35,
+                    sloganOut
+                ) +
+                'px)';
+
+
+            /*
+             * ==================================================
+             * 2. 오른쪽 패널 공개
+             *
+             * 영문 글씨가 거의 사라진 뒤 시작
+             * 36%부터 시작해서 62%에서 완성
+             * ==================================================
+             */
+
+            const coverProgress =
+                smootherStep(
+                    range(
+                        progress,
+                        0.36,
+                        0.62
+                    )
+                );
+
+
+            const hiddenAmount =
+                lerp(
+                    100,
+                    0,
+                    coverProgress
+                );
+
+
+            let clipValue;
+
+
+            if (
+                window.innerWidth <=
+                767
+            ) {
+
+                clipValue =
+                    'inset(' +
+                    hiddenAmount +
+                    '% 0 0 0 round var(--split-radius))';
+
+            } else {
+
+                clipValue =
+                    'inset(0 0 0 ' +
+                    hiddenAmount +
+                    '% round var(--split-radius))';
+
+            }
+
+
+            state.cover.style.setProperty(
+                'clip-path',
+                clipValue,
+                'important'
+            );
+
+
+            state.cover.style.setProperty(
+                '-webkit-clip-path',
+                clipValue,
+                'important'
+            );
+
+
+            /*
+             * ==================================================
+             * 3. 가운데 흰색 간격
+             *
+             * 패널이 어느 정도 공개된 뒤 나타남
+             * ==================================================
+             */
+
+            const dividerProgress =
+                smootherStep(
+                    range(
+                        progress,
+                        0.45,
+                        0.62
+                    )
+                );
+
+
+            state.stage.style.setProperty(
+                '--divider-opacity',
+                dividerProgress
+            );
+
+
+            /*
+             * pseudo-element는 직접 선택할 수 없으므로
+             * stage에 클래스를 넣고 CSS 변수로 제어
+             */
+            state.stage.style.setProperty(
+                '--split-divider-opacity',
+                dividerProgress
+            );
+
+
+            state.stage.style.setProperty(
+                '--split-divider-scale',
+                lerp(
+                    0.92,
+                    1,
+                    dividerProgress
+                )
+            );
+
+
+            /*
+             * ==================================================
+             * 4. 오른쪽 설명 등장
+             *
+             * 패널이 대부분 열린 뒤 먼저 등장
+             * ==================================================
+             */
+
+            const descriptionProgress =
+                smootherStep(
+                    range(
+                        progress,
+                        0.55,
+                        0.72
+                    )
+                );
+
+
+            state.description.style.opacity =
+                String(
+                    descriptionProgress
+                );
+
+
+            state.description.style.visibility =
+                descriptionProgress > 0.002
+                    ? 'visible'
+                    : 'hidden';
+
+
+            state.description.style.transform =
+                'translate3d(' +
+                lerp(
+                    45,
+                    0,
+                    descriptionProgress
+                ) +
+                'px, 0, 0)';
+
+
+            /*
+             * ==================================================
+             * 5. 왼쪽 핵심 글씨 등장
+             *
+             * 오른쪽 설명보다 조금 늦게 등장
+             * ==================================================
+             */
+
+            const keywordProgress =
+                smootherStep(
+                    range(
+                        progress,
+                        0.66,
+                        0.82
+                    )
+                );
+
+
+            state.keyword.style.opacity =
+                String(
+                    keywordProgress
+                );
+
+
+            state.keyword.style.visibility =
+                keywordProgress > 0.002
+                    ? 'visible'
+                    : 'hidden';
+
+
+            state.keyword.style.transform =
+                'translate3d(-50%, -50%, 0) ' +
+                'translateY(' +
+                lerp(
+                    35,
+                    0,
+                    keywordProgress
+                ) +
+                'px)';
+
+        }
+
+
+        let ticking =
+            false;
+
+
+        function update() {
+
+            states.forEach(function (state) {
+
+                updateState(state);
+
+            });
+
+
+            ticking =
+                false;
+
+        }
+
+
+        function requestUpdate() {
+
+            if (ticking) {
+                return;
+            }
+
+
+            ticking =
+                true;
+
+
+            window.requestAnimationFrame(
+                update
+            );
+
+        }
+
+
+        window.addEventListener(
+            'scroll',
+            requestUpdate,
+            {
+                passive: true
+            }
+        );
+
+
+        window.addEventListener(
+            'resize',
+            requestUpdate
+        );
+
+
+        window.addEventListener(
+            'orientationchange',
+            function () {
+
+                window.setTimeout(
+                    requestUpdate,
+                    250
+                );
+
+            }
+        );
+
+
+        window.addEventListener(
+            'load',
+            requestUpdate
+        );
+
+
+        window.setTimeout(
+            requestUpdate,
+            100
+        );
+
+
+        window.setTimeout(
+            requestUpdate,
+            600
+        );
+
+
+        requestUpdate();
+
+    }
+
+
+    if (
+        document.readyState ===
+        'loading'
+    ) {
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            initSancSplitReveal
+        );
+
+    } else {
+
+        initSancSplitReveal();
+
+    }
+
+})();
+</script>
+<?php
+}, 100);
